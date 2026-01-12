@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - System VSB</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .login-card {
+            background: var(--surface);
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            object-fit: contain;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            color: var(--text-main);
+            margin: 0 0 8px;
+            font-weight: 700;
+        }
+
+        p {
+            color: var(--text-muted);
+            margin: 0 0 30px;
+            font-size: 0.95rem;
+        }
+
+        .btn-google {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 12px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            color: var(--text-main);
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            gap: 12px;
+        }
+
+        .btn-google:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
+        .btn-google img {
+            width: 24px;
+            height: 24px;
+        }
+
+        .error-message {
+            color: #ef4444;
+            background: #fee2e2;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Firebase Scripts -->
+
+
+    <div class="login-card">
+        <img src="img/logo.png" alt="Logo" class="logo"
+            onerror="this.src='https://img.icons8.com/fluency/96/server.png'">
+        <h1>System VSB</h1>
+        <p>Silakan login untuk mengakses dashboard.</p>
+
+        <button id="btnLogin" class="btn-google">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+            Masuk dengan Google
+        </button>
+
+        <div id="errorMsg" class="error-message">
+            ⚠️ Akses Ditolak: Email tidak terdaftar.
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+        // Config Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyC6zOHjRl6T1aMzDN80JeLPRFQ9HcQf-HY",
+            authDomain: "studio-8885776968-b18ce.firebaseapp.com",
+            projectId: "studio-8885776968-b18ce",
+            storageBucket: "studio-8885776968-b18ce.firebasestorage.app",
+            messagingSenderId: "300763605586",
+            appId: "1:300763605586:web:13e04342ffe426d57a0d8b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        const btnLogin = document.getElementById('btnLogin');
+        const errorMsg = document.getElementById('errorMsg');
+
+        btnLogin.addEventListener('click', () => {
+            signInWithPopup(auth, provider)
+                .then((result) => {
+                    const user = result.user;
+                    console.log("Logged in as:", user.email);
+
+                    // RESTRICTED ACCESS CHECK
+                    // Only allow specifics emails
+                    if (user.email === 'shalcnzee@gmail.com') {
+                        // Success
+                        localStorage.setItem('user_email', user.email);
+                        localStorage.setItem('user_uid', user.uid);
+                        window.location.href = '/dashboard.html';
+                    } else {
+                        // Denied
+                        signOut(auth);
+                        errorMsg.style.display = 'flex';
+                        errorMsg.innerHTML = `⚠️ Akses Ditolak: <b>${user.email}</b> tidak memiliki izin.`;
+                    }
+                }).catch((error) => {
+                    console.error("Login failed:", error);
+                    errorMsg.style.display = 'flex';
+                    errorMsg.innerText = "Login gagal / dibatalkan.";
+                });
+        });
+    </script>
+</body>
+
+</html>
