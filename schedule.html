@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta name="theme-color" content="#ffffff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="manifest" href="manifest.json">
+    <script>
+        // SW Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js');
+            });
+        }
+
+        // Authentication Check
+        if (sessionStorage.getItem('isAuthenticated') !== 'true') {
+            window.location.href = 'login.html';
+        }
+
+        function logout() {
+            sessionStorage.clear();
+            window.location.href = 'login.html';
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-page: #ffffff;
+            --bg-sidebar: #fbfbfa;
+            --text-main: #37352f;
+            --text-secondary: #787774;
+            --border: #e9e9e8;
+            --hover: #f1f1f0;
+            --accent: #2383e2;
+            --radius: 4px;
+
+            /* Status Colors */
+            --done-bg: #e2f6d3;
+            --done-text: #4d7c0f;
+            --progress-bg: #d3e5ef;
+            --progress-text: #1d4d5c;
+            --todo-bg: #f3f4f6;
+            --todo-text: #4b5563;
+            --lunas-bg: #e2f6d3;
+            --lunas-text: #4d7c0f;
+            --dp-bg: #f3e8ff;
+            --dp-text: #6b21a8;
+            --hpp-bg: #e0f2fe;
+            --hpp-text: #075985;
+            --blm-bg: #fee2e2;
+            --blm-text: #991b1b;
+            --sudah-bg: #065f46;
+            --sudah-text: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
+        }
+
+        body {
+            color: var(--text-main);
+            background: var(--bg-page);
+            line-height: 1.5;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Content Area */
+        .main-content {
+            flex: 1;
+            padding: 40px 60px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        header {
+            margin-bottom: 30px;
+        }
+
+        .page-icon {
+            font-size: 60px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        h1 {
+            font-size: 40px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-desc {
+            color: var(--text-secondary);
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        /* Sidebar/Navigation Simulation (Top bar for PWA) */
+        .top-nav {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 40px;
+            font-size: 14px;
+        }
+
+        .nav-item {
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 4px 8px;
+            border-radius: var(--radius);
+            transition: background 0.2s;
+        }
+
+        .nav-item:hover {
+            background: var(--hover);
+        }
+
+        .nav-item.active {
+            color: var(--text-main);
+            font-weight: 600;
+            border-bottom: 2px solid var(--text-main);
+            border-radius: 0;
+        }
+
+        /* Quick Actions */
+        .actions-bar {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 6px 12px;
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background: white;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--hover);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .btn-primary:hover {
+            background: #1a6ab3;
+        }
+
+        /* Notion Table Container */
+        .notion-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        /* Group Header */
+        .group-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 0 8px;
+            cursor: pointer;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border);
+            margin-top: 20px;
+        }
+
+        .group-header:hover {
+            background: var(--hover);
+        }
+
+        .group-header svg {
+            transition: transform 0.2s;
+        }
+
+        .group-header.collapsed svg {
+            transform: rotate(-90deg);
+        }
+
+        .group-count {
+            color: var(--text-secondary);
+            font-weight: 400;
+            margin-left: 5px;
+        }
+
+        /* Table Structure */
+        .table-row {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            min-height: 36px;
+            transition: background 0.1s;
+        }
+
+        .table-row:hover {
+            background: var(--hover);
+        }
+
+        .table-cell {
+            padding: 8px 10px;
+            display: flex;
+            align-items: center;
+            border-right: 1px solid var(--border);
+        }
+
+        .table-cell:last-child {
+            border-right: none;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 20px 15px;
+            }
+
+            .page-icon {
+                font-size: 60px;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            .top-nav {
+                flex-wrap: wrap;
+                gap: 10px;
+                margin-bottom: 25px;
+            }
+
+            .actions-bar {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 8px;
+            }
+
+            .btn {
+                flex: 1;
+                justify-content: center;
+                min-width: 120px;
+            }
+
+            /* Enable horizontal scroll for table on small screens */
+            .table-container {
+                overflow-x: auto;
+                margin: 0 -15px;
+                padding: 0 15px;
+            }
+
+            .notion-table {
+                min-width: 600px;
+            }
+
+            .col-name {
+                min-width: 200px;
+            }
+        }
+
+        /* Support for very small screens */
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 22px;
+            }
+
+            .page-icon {
+                font-size: 40px;
+            }
+        }
+
+        /* Column Configs */
+        .col-check {
+            width: 40px;
+            justify-content: center;
+        }
+
+        .col-brand {
+            flex: 2;
+            min-width: 180px;
+        }
+
+        .col-tipe {
+            width: 140px;
+        }
+
+        .col-pembayaran {
+            width: 180px;
+        }
+
+        .col-status {
+            width: 160px;
+        }
+
+        .col-actions {
+            width: 80px;
+            justify-content: center;
+        }
+
+        /* Form Inputs in Table */
+        .cell-input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            font-size: inherit;
+            color: inherit;
+            outline: none;
+            padding: 2px 4px;
+        }
+
+        .cell-input:focus {
+            background: white;
+            box-shadow: 0 0 0 2px var(--accent);
+            border-radius: 2px;
+        }
+
+        /* Checkbox Styling */
+        .checkbox-container {
+            display: block;
+            position: relative;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox-container input {
+            visibility: hidden;
+            width: 0;
+            height: 0;
+        }
+
+        .checkmark {
+            position: absolute;
+            top: -9px;
+            left: -9px;
+            height: 18px;
+            width: 18px;
+            background-color: transparent;
+            border: 2px solid var(--border);
+            border-radius: 3px;
+        }
+
+        .checkbox-container:hover input~.checkmark {
+            border-color: var(--text-secondary);
+        }
+
+        .checkbox-container input:checked~.checkmark {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .checkmark:after {
+            content: "";
+            position: absolute;
+            display: none;
+            left: 5px;
+            top: 2px;
+            width: 4px;
+            height: 9px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        .checkbox-container input:checked~.checkmark:after {
+            display: block;
+        }
+
+        /* Badges/Tags */
+        .tag {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .tag-done,
+        .tag-sudah {
+            background: var(--sudah-bg);
+            color: var(--sudah-text);
+        }
+
+        .tag-progress,
+        .tag-on-progress {
+            background: var(--progress-bg);
+            color: var(--progress-text);
+        }
+
+        .tag-todo,
+        .tag-belum-diambil {
+            background: var(--todo-bg);
+            color: var(--todo-text);
+        }
+
+        .tag-lunas {
+            background: var(--lunas-bg);
+            color: var(--lunas-text);
+        }
+
+        .tag-dp-awal {
+            background: var(--dp-bg);
+            color: var(--dp-text);
+        }
+
+        .tag-hpp {
+            background: var(--hpp-bg);
+            color: var(--hpp-text);
+        }
+
+        .tag-blm {
+            background: var(--blm-bg);
+            color: var(--blm-text);
+        }
+
+        .tag-group {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: white;
+            width: 90%;
+            max-width: 500px;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: var(--accent);
+        }
+
+        .modal-footer {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .empty-state {
+            padding: 40px;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        /* Animation */
+        .task-list {
+            transition: all 0.3s;
+        }
+
+        .hidden-group {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 20px;
+            }
+
+            .col-assignee,
+            .col-due,
+            .col-priority {
+                display: none;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="layout">
+        <main class="main-content">
+            <div class="top-nav">
+                <a href="portal.html" class="nav-item">Dashboard</a>
+                <a href="#" class="nav-item active">Jadwal Client</a>
+            </div>
+
+            <header>
+                <h1>Projects & Tasks</h1>
+                <div class="header-desc">Kelola jadwal dan tugas klien Anda dengan sistem manajemen bergaya Notion yang
+                    efisien.</div>
+            </header>
+
+            <div class="actions-bar">
+                <button class="btn" onclick="openGroupModal()">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M14 7H9V2H7v5H2v2h5v5h2V9h5V7z" />
+                    </svg>
+                    Tambah Grup
+                </button>
+                <button class="btn btn-primary" onclick="openTaskModal()">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="white">
+                        <path d="M14 7H9V2H7v5H2v2h5v5h2V9h5V7z" />
+                    </svg>
+                    Tambah Tugas
+                </button>
+            </div>
+
+            <div class="table-container">
+                <div id="scheduleTable">
+                    <!-- Data rendered dynamically here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="groupModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-title">Buat Grup Baru</div>
+            <div class="form-group">
+                <label class="form-label">Nama Grup (Contoh: Marketing Campaign)</label>
+                <input type="text" id="groupNameInput" class="form-input" placeholder="Masukkan nama grup...">
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal('groupModal')">Batal</button>
+                <button class="btn btn-primary" onclick="saveGroup()">Simpan Grup</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="taskModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-title" id="taskModalTitle">Tambah Tugas Baru</div>
+            <input type="hidden" id="editTaskId">
+            <div class="form-group">
+                <label class="form-label">Brand/Nama Klien</label>
+                <input type="text" id="taskNameInput" class="form-input" placeholder="Nama brand...">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Tipe</label>
+                <select id="taskTipeSelect" class="form-input">
+                    <option value="Website">Website</option>
+                    <option value="SEO">SEO</option>
+                    <option value="System">System</option>
+                    <option value="System & Web">System & Web</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Pembayaran (Gunakan koma untuk banyak tag)</label>
+                <input type="text" id="taskPembayaranInput" class="form-input" placeholder="Contoh: DP Awal, HPP">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Status</label>
+                <select id="taskStatusSelect" class="form-input">
+                    <option value="Sudah">Sudah</option>
+                    <option value="On Progress">On Progress</option>
+                    <option value="Belum Diambil">Belum Diambil</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal('taskModal')">Batal</button>
+                <button class="btn btn-primary" onclick="saveTask()">Simpan Tugas</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data Handling
+        let state = {
+            groups: [],
+            tasks: [],
+            collapsedGroups: []
+        };
+
+        // Load data from localStorage
+        function loadData() {
+            const savedData = localStorage.getItem('vsba_schedules_v2');
+            let shouldSeed = !savedData;
+
+            if (savedData) {
+                state = JSON.parse(savedData);
+                // Force seed if it's the old empty default state
+                if (state.tasks.length === 0 && state.groups.length <= 1) {
+                    shouldSeed = true;
+                }
+            }
+
+            if (shouldSeed) {
+                state = {
+                    groups: [
+                        { id: 'all_projects', name: 'Client Projects' }
+                    ],
+                    tasks: [
+                        { id: 't1', name: 'PfGym', tipe: 'Website', pembayaran: 'Lunas', status: 'Sudah', completed: true },
+                        { id: 't2', name: 'Ada Laundry', tipe: 'SEO', pembayaran: 'Lunas', status: 'Sudah', completed: true },
+                        { id: 't3', name: 'PfGym', tipe: 'System', pembayaran: 'DP Awal, HPP', status: 'On Progress', completed: false },
+                        { id: 't4', name: 'Alam Decor', tipe: 'System & Web', pembayaran: 'DP Awal', status: 'On Progress', completed: false },
+                        { id: 't5', name: 'Imperial', tipe: 'SEO', pembayaran: 'Lunas', status: 'Sudah', completed: true },
+                        { id: 't6', name: 'Imperial', tipe: 'System', pembayaran: 'DP Awal', status: 'On Progress', completed: false },
+                        { id: 't7', name: 'Lumbung Beras', tipe: 'Website', pembayaran: 'Blm', status: 'Belum Diambil', completed: false },
+                        { id: 't8', name: 'Zona Seafood', tipe: 'SEO', pembayaran: 'Lunas', status: 'On Progress', completed: false },
+                        { id: 't9', name: 'Falisha Laundry', tipe: 'Website', pembayaran: 'Blm', status: 'Belum Diambil', completed: false },
+                        { id: 't10', name: 'Fredyliong', tipe: 'SEO', pembayaran: 'Blm', status: 'On Progress', completed: false },
+                        { id: 't11', name: 'Ada Laundry', tipe: 'Website', pembayaran: 'Blm', status: 'Belum Diambil', completed: false }
+                    ].map(t => ({ ...t, groupId: 'all_projects', assignee: 'Admin', dueDate: '', priority: 'Medium' })),
+                    collapsedGroups: []
+                };
+                saveData();
+            }
+            render();
+        }
+
+        function saveData() {
+            localStorage.setItem('vsba_schedules_v2', JSON.stringify(state));
+        }
+
+        // CRUD UI Actions
+        function openGroupModal() {
+            document.getElementById('groupModal').style.display = 'flex';
+            document.getElementById('groupNameInput').focus();
+        }
+
+        function openTaskModal(taskId = null) {
+            if (taskId) {
+                const task = state.tasks.find(t => t.id === taskId);
+                document.getElementById('taskModalTitle').innerText = 'Edit Klien';
+                document.getElementById('editTaskId').value = task.id;
+                document.getElementById('taskNameInput').value = task.name;
+                document.getElementById('taskTipeSelect').value = task.tipe || 'Website';
+                document.getElementById('taskPembayaranInput').value = task.pembayaran || '';
+                document.getElementById('taskStatusSelect').value = task.status || 'Sudah';
+            } else {
+                document.getElementById('taskModalTitle').innerText = 'Tambah Klien Baru';
+                document.getElementById('editTaskId').value = '';
+                document.getElementById('taskNameInput').value = '';
+                document.getElementById('taskPembayaranInput').value = '';
+                document.getElementById('taskStatusSelect').value = 'Sudah';
+            }
+
+            document.getElementById('taskModal').style.display = 'flex';
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        // Logic Actions
+        function saveGroup() {
+            const name = document.getElementById('groupNameInput').value.trim();
+            if (!name) return;
+
+            const newGroup = {
+                id: 'group_' + Date.now(),
+                name: name
+            };
+
+            state.groups.push(newGroup);
+            saveData();
+            closeModal('groupModal');
+            render();
+            document.getElementById('groupNameInput').value = '';
+        }
+
+        function saveTask() {
+            const name = document.getElementById('taskNameInput').value.trim();
+            const tipe = document.getElementById('taskTipeSelect').value;
+            const pembayaran = document.getElementById('taskPembayaranInput').value.trim();
+            const status = document.getElementById('taskStatusSelect').value;
+            const editId = document.getElementById('editTaskId').value;
+
+            if (!name) return;
+
+            if (editId) {
+                const index = state.tasks.findIndex(t => t.id === editId);
+                state.tasks[index] = {
+                    ...state.tasks[index],
+                    name, tipe, pembayaran, status,
+                    completed: status === 'Sudah'
+                };
+            } else {
+                const newTask = {
+                    id: 'task_' + Date.now(),
+                    name,
+                    tipe,
+                    pembayaran,
+                    status,
+                    groupId: 'all_projects',
+                    assignee: 'Admin',
+                    dueDate: '',
+                    priority: 'Medium',
+                    completed: status === 'Sudah'
+                };
+                state.tasks.push(newTask);
+            }
+
+            saveData();
+            closeModal('taskModal');
+            render();
+        }
+
+        function toggleTask(taskId) {
+            const task = state.tasks.find(t => t.id === taskId);
+            task.completed = !task.completed;
+            if (task.completed) {
+                task.status = 'Sudah';
+            } else {
+                task.status = 'On Progress';
+            }
+            saveData();
+            render();
+        }
+
+        function deleteTask(taskId) {
+            if (confirm('Hapus tugas ini?')) {
+                state.tasks = state.tasks.filter(t => t.id !== taskId);
+                saveData();
+                render();
+            }
+        }
+
+        function toggleGroup(groupId) {
+            const index = state.collapsedGroups.indexOf(groupId);
+            if (index > -1) {
+                state.collapsedGroups.splice(index, 1);
+            } else {
+                state.collapsedGroups.push(groupId);
+            }
+            saveData();
+            render();
+        }
+
+        function deleteGroup(groupId) {
+            if (state.tasks.some(t => t.groupId === groupId)) {
+                alert('Tidak bisa menghapus grup yang masih memiliki tugas.');
+                return;
+            }
+            if (confirm('Hapus grup ini?')) {
+                state.groups = state.groups.filter(g => g.id !== groupId);
+                saveData();
+                render();
+            }
+        }
+
+        // Rendering
+        function render() {
+            const container = document.getElementById('scheduleTable');
+            if (state.groups.length === 0) {
+                container.innerHTML = '<div class="empty-state">Belum ada grup. Silakan tambah grup terlebih dahulu.</div>';
+                return;
+            }
+
+            let html = '';
+
+            state.groups.forEach(group => {
+                const groupTasks = state.tasks.filter(t => t.groupId === group.id);
+                const isCollapsed = state.collapsedGroups.includes(group.id);
+
+                html += `
+                    <div class="group-wrapper">
+                        <div class="group-header ${isCollapsed ? 'collapsed' : ''}" onclick="toggleGroup('${group.id}')">
+                            <svg width="12" height="12" viewBox="0 0 100 100">
+                                <path d="M 30,20 L 70,50 L 30,80 Z" fill="currentColor"/>
+                            </svg>
+                            ${group.name}
+                            <span class="group-count">${groupTasks.length}</span>
+                            <div style="flex:1"></div>
+                            <button class="btn btn-ghost" style="border:none; padding:2px" onclick="event.stopPropagation(); deleteGroup('${group.id}')" title="Hapus Grup">
+                                <svg width="14" height="14" viewBox="0 0 16 16" fill="#787774">
+                                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                                    <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <div class="task-list ${isCollapsed ? 'hidden-group' : ''}">
+                            <!-- Table Header -->
+                            <div class="table-row" style="background:transparent; font-weight:500; color:var(--text-secondary); border-top:none;">
+                                <div class="table-cell col-check"></div>
+                                <div class="table-cell col-brand">Brand</div>
+                                <div class="table-cell col-tipe">Tipe</div>
+                                <div class="table-cell col-pembayaran">Pembayaran</div>
+                                <div class="table-cell col-status">Status</div>
+                                <div class="table-cell col-actions">Actions</div>
+                            </div>
+                            
+                            ${groupTasks.length === 0 ? '<div style="padding:10px; color:#ccc; font-style:italic">Belum ada data klien.</div>' : ''}
+                            
+                            ${groupTasks.map(task => {
+                    const payTags = (task.pembayaran || '').split(',').map(s => s.trim()).filter(s => s);
+                    return `
+                                <div class="table-row">
+                                    <div class="table-cell col-check">
+                                        <label class="checkbox-container">
+                                            <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask('${task.id}')">
+                                            <span class="checkmark"></span>
+                                        </label>
+                                    </div>
+                                    <div class="table-cell col-brand" style="${task.completed ? 'text-decoration: line-through; color: var(--text-secondary)' : ''}">
+                                        ${task.name}
+                                    </div>
+                                    <div class="table-cell col-tipe">
+                                        ${task.tipe || '-'}
+                                    </div>
+                                    <div class="table-cell col-pembayaran">
+                                        <div class="tag-group">
+                                            ${payTags.map(tag => `<span class="tag tag-${tag.toLowerCase().replace(/\s+/g, '-')}">${tag}</span>`).join('')}
+                                            ${payTags.length === 0 ? '-' : ''}
+                                        </div>
+                                    </div>
+                                    <div class="table-cell col-status">
+                                        <span class="tag tag-${task.status.toLowerCase().replace(/\s+/g, '-')}">${task.status}</span>
+                                    </div>
+                                    <div class="table-cell col-actions">
+                                        <button class="btn btn-ghost" style="border:none; padding:2px" onclick="openTaskModal('${task.id}')">
+                                             <svg width="14" height="14" viewBox="0 0 16 16" fill="#787774">
+                                                <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+                                            </svg>
+                                        </button>
+                                        <button class="btn btn-ghost" style="border:none; padding:2px" onclick="deleteTask('${task.id}')">
+                                            <svg width="14" height="14" viewBox="0 0 16 16" fill="#787774">
+                                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                                                <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                `}).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Initialize
+        loadData();
+    </script>
+</body>
+
+</html>

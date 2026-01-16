@@ -4,29 +4,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - System VSB</title>
+    <title>Admin Login - System VSB</title>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="apple-touch-icon" href="img/logo-saja.png">
+
     <style>
         :root {
             --primary: #4f46e5;
             --primary-dark: #4338ca;
-            --background: #f8fafc;
+            --background: #c5d3df;
             --surface: #ffffff;
             --text-main: #1e293b;
             --text-muted: #64748b;
         }
 
         body {
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Work Sans', sans-serif;
             margin: 0;
-            padding: 0;
-            background-color: var(--background);
+            background: var(--background);
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             overflow: hidden;
+            color: #333;
         }
 
         .login-card {
@@ -38,6 +44,33 @@
             max-width: 400px;
             text-align: center;
             animation: slideUp 0.5s ease-out;
+            position: relative;
+        }
+
+        /* PWA Install Button */
+        #installBanner {
+            display: none;
+            background: #eef2ff;
+            border: 1px solid #c7d2fe;
+            padding: 10px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 0.85rem;
+            color: var(--primary);
+            flex-direction: column;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .btn-install {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 6px 15px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
         }
 
         .logo {
@@ -48,16 +81,104 @@
         }
 
         h1 {
-            font-size: 1.8rem;
-            color: var(--text-main);
-            margin: 0 0 8px;
-            font-weight: 700;
+            font-size: 2rem;
+            margin: 0 0 15px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-family: 'Work Sans', sans-serif;
+            color: #222;
         }
 
         p {
             color: var(--text-muted);
-            margin: 0 0 30px;
+            margin: 0 0 20px;
             font-size: 0.95rem;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 12px;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 12px 12px 12px 40px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+
+        .input-wrapper input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 20px;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .divider:not(:empty)::before {
+            margin-right: .5em;
+        }
+
+        .divider:not(:empty)::after {
+            margin-left: .5em;
         }
 
         .btn-google {
@@ -119,18 +240,41 @@
 
 
     <div class="login-card">
-        <img src="img/logo.png" alt="Logo" class="logo"
-            onerror="this.src='https://img.icons8.com/fluency/96/server.png'">
-        <h1>System VSB</h1>
+        <div id="installBanner">
+            <span>Pakai aplikasi agar lebih cepat!</span>
+            <button class="btn-install" id="btnInstallSub">Instal Sekarang</button>
+        </div>
+        <img src="img/logo-saja.png" alt="Logo" class="logo">
+        <h1>Admin Login</h1>
         <p>Silakan login untuk mengakses dashboard.</p>
 
-        <button id="btnLogin" class="btn-google">
+        <div class="input-group">
+            <label>Username</label>
+            <div class="input-wrapper">
+                <i class="fas fa-user">👤</i>
+                <input type="text" id="username" placeholder="Masukkan username">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label>Password</label>
+            <div class="input-wrapper">
+                <i class="fas fa-lock">🔒</i>
+                <input type="password" id="password" placeholder="Masukkan password">
+            </div>
+        </div>
+
+        <button id="btnLoginManual" class="btn-primary">Masuk</button>
+
+        <div class="divider">atau</div>
+
+        <button id="btnLoginGoogle" class="btn-google">
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
             Masuk dengan Google
         </button>
 
         <div id="errorMsg" class="error-message">
-            ⚠️ Akses Ditolak: Email tidak terdaftar.
+            ⚠️ Akses Ditolak: Username atau Password salah.
         </div>
     </div>
 
@@ -138,10 +282,59 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(reg => console.log('SW Registered!', reg))
+                    .catch(err => console.log('SW Reg error:', err));
+            });
+        }
+
+        // PWA Install Logic
+        let deferredPrompt;
+        const installBanner = document.getElementById('installBanner');
+        const btnInstallSub = document.getElementById('btnInstallSub');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBanner.style.display = 'flex';
+        });
+
+        btnInstallSub.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') installBanner.style.display = 'none';
+                deferredPrompt = null;
+            }
+        });
+
+        // Auto Logout after 20 seconds of inactivity (Security Sync)
+        let timeout;
+        function resetTimer() {
+            if (sessionStorage.getItem('isAuthenticated') === 'true') {
+                clearTimeout(timeout);
+                timeout = setTimeout(logout, 20000);
+            }
+        }
+        function logout() {
+            sessionStorage.removeItem('isAuthenticated');
+            sessionStorage.removeItem('user_role');
+            window.location.reload();
+        }
+        document.onmousemove = resetTimer;
+        document.onkeypress = resetTimer;
+        document.onmousedown = resetTimer;
+        document.ontouchstart = resetTimer;
+        resetTimer();
+
         // Config Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyC6zOHjRl6T1aMzDN80JeLPRFQ9HcQf-HY",
             authDomain: "studio-8885776968-b18ce.firebaseapp.com",
+            databaseURL: "https://studio-8885776968-b18ce-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "studio-8885776968-b18ce",
             storageBucket: "studio-8885776968-b18ce.firebasestorage.app",
             messagingSenderId: "300763605586",
@@ -152,24 +345,39 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        const btnLogin = document.getElementById('btnLogin');
+        const btnLoginGoogle = document.getElementById('btnLoginGoogle');
+        const btnLoginManual = document.getElementById('btnLoginManual');
         const errorMsg = document.getElementById('errorMsg');
 
-        btnLogin.addEventListener('click', () => {
+        // Login Manual (admin/admin)
+        btnLoginManual.addEventListener('click', () => {
+            const userVal = document.getElementById('username').value;
+            const passVal = document.getElementById('password').value;
+
+            if (userVal === 'admin' && passVal === 'admin') {
+                sessionStorage.setItem('isAuthenticated', 'true');
+                sessionStorage.setItem('user_role', 'admin');
+                window.location.href = '/portal.html';
+            } else {
+                errorMsg.style.display = 'flex';
+                errorMsg.innerText = "⚠️ Username atau Password salah.";
+            }
+        });
+
+        // Login Google
+        btnLoginGoogle.addEventListener('click', () => {
             signInWithPopup(auth, provider)
                 .then((result) => {
                     const user = result.user;
                     console.log("Logged in as:", user.email);
 
                     // RESTRICTED ACCESS CHECK
-                    // Only allow specifics emails
-                    if (user.email === 'shalcnzee@gmail.com') {
-                        // Success
+                    if (user.email === 'shalcnzee@gmail.com' || user.email === 'abibhero04@gmail.com') {
+                        sessionStorage.setItem('isAuthenticated', 'true');
                         localStorage.setItem('user_email', user.email);
                         localStorage.setItem('user_uid', user.uid);
-                        window.location.href = '/dashboard.html';
+                        window.location.href = '/portal.html';
                     } else {
-                        // Denied
                         signOut(auth);
                         errorMsg.style.display = 'flex';
                         errorMsg.innerHTML = `⚠️ Akses Ditolak: <b>${user.email}</b> tidak memiliki izin.`;

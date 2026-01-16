@@ -1,0 +1,23 @@
+{
+    "name": "Visba System",
+    "short_name": "Visba",
+    "description": "Professional Hosting & Domain Reminder System",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#f8fafc",
+    "theme_color": "#ffffff",
+    "icons": [
+        {
+            "src": "img/logo-saja.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "img/logo-saja.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
+}

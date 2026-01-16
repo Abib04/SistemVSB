@@ -33,7 +33,7 @@ try {
     if (regex.test(content)) {
         content = content.replace(regex, new_block + '\n\n    <title>');
         fs.writeFileSync('index.html', content);
-        console.log('Successfully updated index.html with LOGO SAJA.png');
+        console.log('Successfully updated index.html with logo-saja.png');
     } else {
         console.log('Could not find Icons block in index.html to replace');
     }

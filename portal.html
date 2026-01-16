@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VISBA SYSTEM MANAGEMENT</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f141a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="img/logo-saja.png">
+
+    <style>
+        :root {
+            --bg: #0f141a;
+            --text: #f9f9f9;
+            --accent-red: #ff4655;
+            --accent-cream: #ece8e1;
+            --dark-text: #0f141a;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            padding: 20px;
+        }
+
+        .title-wrapper {
+            margin-bottom: 80px;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        h1 {
+            font-family: 'Bebas Neue', cursive;
+            font-size: clamp(2.5rem, 10vw, 6rem);
+            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            color: var(--text);
+        }
+
+        h1 span {
+            opacity: 0.5;
+            font-weight: 300;
+        }
+
+        .tiles {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        .tile-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            flex: 1;
+            min-width: 280px;
+        }
+
+        .tile-sub {
+            font-size: 1rem;
+            text-transform: none;
+            letter-spacing: 0.5px;
+            color: var(--text);
+            opacity: 0.9;
+            font-weight: 400;
+        }
+
+        .tile-btn {
+            width: 100%;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
+            font-family: 'Bebas Neue', cursive;
+            font-size: 1.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            border: none;
+        }
+
+        .btn-left {
+            background-color: var(--accent-cream);
+            color: var(--dark-text);
+        }
+
+        .btn-right {
+            background-color: var(--accent-red);
+            color: #fff;
+        }
+
+        .tile-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-right:hover {
+            background-color: #ff5e6a;
+        }
+
+        .btn-left:hover {
+            background-color: #fff;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logout-btn {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text);
+            padding: 10px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--text);
+        }
+
+        @media (max-width: 600px) {
+            .tiles {
+                flex-direction: column;
+                width: 100%;
+                gap: 50px;
+            }
+
+            .tile-btn {
+                height: 80px;
+                font-size: 1.5rem;
+            }
+
+            h1 {
+                font-size: 3rem;
+            }
+
+            .title-wrapper {
+                margin-bottom: 50px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        // Authentication Check
+        if (sessionStorage.getItem('isAuthenticated') !== 'true') {
+            window.location.href = 'login.html';
+        }
+
+        function logout() {
+            if (confirm('Keluar dari sistem?')) {
+                sessionStorage.clear();
+                window.location.href = 'login.html';
+            }
+        }
+    </script>
+
+    <div class="container">
+        <div class="title-wrapper">
+            <h1><span>\</span> VISBA SYSTEM MANAGEMENT <span>\</span></h1>
+        </div>
+
+        <div class="tiles">
+            <!-- Left Side -->
+            <div class="tile-wrapper">
+                <div class="tile-sub">Kelola Jadwal & Tugas Client</div>
+                <a href="schedule.html" class="tile-btn btn-left">Jadwal Client</a>
+            </div>
+
+            <!-- Right Side -->
+            <div class="tile-wrapper">
+                <div class="tile-sub">Kelola Hosting & Domain Database</div>
+                <a href="index.html" class="tile-btn btn-right">Hosting</a>
+            </div>
+        </div>
+    </div>
+
+    <button class="logout-btn" onclick="logout()">Logout</button>
+</body>
+
+</html>
